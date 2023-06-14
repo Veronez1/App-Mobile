@@ -5,25 +5,26 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(RestCountriesApp());
+  runApp(AppPaisesMundo());
 }
 
-class RestCountriesApp extends StatelessWidget {
+class AppPaisesMundo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Paises do mundo',
+      title: 'Paises do Mundo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        brightness: Brightness.dark, // Dark mode
+        brightness: Brightness.dark, // Modo escuro
       ),
-      home: SplashScreen(),
+      home: TelaDeAbertura(),
     );
   }
 }
 
-class SplashScreen extends StatelessWidget {
+// Tela de TelaDeAbertura exibida no início
+class TelaDeAbertura extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +34,7 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Paises do mundo',
+              'Paises do Mundo',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 48,
@@ -47,13 +48,13 @@ class SplashScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CountryListScreen(),
+                    builder: (context) => TelaListaPaises(),
                   ),
                 );
               },
               child: Text(
                 'Iniciar',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(fontSize: 24),
               ),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -71,129 +72,132 @@ class SplashScreen extends StatelessWidget {
   }
 }
 
-class Country {
-  String name;
+// Classe que representa um país
+class Pais {
+  String nome;
   String capital;
-  String region;
-  String subregion;
-  String population;
+  String regiao;
+  String subRegiao;
+  String populacao;
   String flagUrl;
-  List<String> languages;
-  List<String> currencies;
-  String coatOfArmsUrl;
-  List<String> timezones;
+  List<String> idioma;
+  List<String> moeda;
+  String brasao;
+  List<String> fusoHorario;
 
-  Country({
-    required this.name,
+  Pais({
+    required this.nome,
     required this.capital,
-    required this.region,
-    required this.subregion,
-    required this.population,
+    required this.regiao,
+    required this.subRegiao,
+    required this.populacao,
     required this.flagUrl,
-    required this.languages,
-    required this.currencies,
-    required this.coatOfArmsUrl,
-    required this.timezones,
+    required this.idioma,
+    required this.moeda,
+    required this.brasao,
+    required this.fusoHorario,
   });
 }
 
-class CountryListScreen extends StatefulWidget {
+// Tela que exibe a lista de países
+class TelaListaPaises extends StatefulWidget {
   @override
-  _CountryListScreenState createState() => _CountryListScreenState();
+  _TelaListaPaisesState createState() => _TelaListaPaisesState();
 }
 
-class _CountryListScreenState extends State<CountryListScreen> {
-  late Future<List<Country>> _countryData;
+class _TelaListaPaisesState extends State<TelaListaPaises> {
+  late Future<List<Pais>> _paisDados;
 
   @override
   void initState() {
     super.initState();
     WebView.platform = SurfaceAndroidWebView();
-    _countryData = _fetchCountryData();
+    _paisDados = _getPaisDados();
   }
 
-  Future<List<Country>> _fetchCountryData() async {
+  // Função assíncrona para buscar os dados dos países
+  // A implementação da lógica de consumo da REST API está presente no método _getPaisDados,
+  // onde são realizadas requisições HTTP para obter os dados dos países.
+  Future<List<Pais>> _getPaisDados() async {
     final response =
         await http.get(Uri.parse('https://restcountries.com/v3.1/all'));
     if (response.statusCode == 200) {
       final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
 
-      List<Country> countries = [];
-      for (var countryData in jsonData) {
-        List<String> languages = [];
-        if (countryData['languages'] != null) {
-          for (var language in countryData['languages'].values) {
-            languages.add(language.toString());
+      List<Pais> paises = [];
+      for (var paisDado in jsonData) {
+        List<String> idioma = [];
+        if (paisDado['languages'] != null) {
+          for (var language in paisDado['languages'].values) {
+            idioma.add(language.toString());
           }
         }
 
-        List<String> currencies = [];
-        if (countryData['currencies'] != null) {
-          countryData['currencies'].forEach((key, value) {
-            String currencyName = value['name'];
-            String currencySymbol = value['symbol'];
-            String currency = '$currencyName ($currencySymbol)';
-            currencies.add(currency);
+        List<String> moeda = [];
+        if (paisDado['currencies'] != null) {
+          paisDado['currencies'].forEach((key, value) {
+            String nomeMoeda = value['name'];
+            String simboloMoeda = value['symbol'];
+            String currency = '$nomeMoeda ($simboloMoeda)';
+            moeda.add(currency);
           });
         }
 
-        List<String> timezones = [];
-        if (countryData['timezones'] != null) {
-          for (var timezone in countryData['timezones']) {
-            timezones.add(timezone.toString());
+        List<String> fusoHorario = [];
+        if (paisDado['timezones'] != null) {
+          for (var timezone in paisDado['timezones']) {
+            fusoHorario.add(timezone.toString());
           }
         }
-        String coatOfArmsUrl = '';
-        if (countryData['flags'] != null &&
-            countryData['flags']['png'] != null) {
-          coatOfArmsUrl = countryData['flags']['png'];
+        String brasao = '';
+        if (paisDado['flags'] != null && paisDado['flags']['png'] != null) {
+          brasao = paisDado['flags']['png'];
         }
 
-        String population = '';
-        if (countryData['population'] != null) {
-          int populationCount = countryData['population'];
-          population = formatPopulation(populationCount);
+        String populacao = '';
+        if (paisDado['population'] != null) {
+          int populationCount = paisDado['population'];
+          populacao = formataPopulacao(populationCount);
         }
 
-        Country country = Country(
-          name: countryData['name']['common'] ?? 'N/A',
-          capital: countryData['capital'] != null
-              ? countryData['capital'][0]
-              : 'N/A',
-          region: countryData['region'] ?? 'N/A',
-          subregion: countryData['subregion'] ?? 'N/A',
-          population: population,
-          flagUrl: coatOfArmsUrl,
-          languages: languages,
-          currencies: currencies,
-          coatOfArmsUrl: coatOfArmsUrl,
-          timezones: timezones,
+        Pais pais = Pais(
+          nome: paisDado['name']['common'] ?? 'N/A',
+          capital: paisDado['capital'] != null ? paisDado['capital'][0] : 'N/A',
+          regiao: paisDado['region'] ?? 'N/A',
+          subRegiao: paisDado['subregion'] ?? 'N/A',
+          populacao: populacao,
+          flagUrl: brasao,
+          idioma: idioma,
+          moeda: moeda,
+          brasao: brasao,
+          fusoHorario: fusoHorario,
         );
 
-        countries.add(country);
+        paises.add(pais);
       }
 
-      // Sort countries alphabetically
-      countries.sort((a, b) => a.name.compareTo(b.name));
+      // Ordenar países em ordem alfabética
+      paises.sort((a, b) => a.nome.compareTo(b.nome));
 
-      return countries;
+      return paises;
     } else {
-      throw Exception('Failed to fetch country data');
+      throw Exception('Falha ao buscar os dados dos países');
     }
   }
 
-  String formatPopulation(int population) {
-    if (population < 1000) {
-      return population.toString();
-    } else if (population < 1000000) {
-      double populationInK = population / 1000;
-      return '${populationInK.toStringAsFixed(1)}K';
-    } else if (population < 1000000000) {
-      double populationInM = population / 1000000;
-      return '${populationInM.toStringAsFixed(1)}M';
+  // Função para formatar a população do país
+  String formataPopulacao(int populacao) {
+    if (populacao < 1000) {
+      return populacao.toString();
+    } else if (populacao < 1000000) {
+      double populationInK = populacao / 1000;
+      return '${populationInK.toStringAsFixed(1)} Mil';
+    } else if (populacao < 1000000000) {
+      double populationInM = populacao / 1000000;
+      return '${populationInM.toStringAsFixed(1)} Mi';
     } else {
-      double populationInB = population / 1000000000;
-      return '${populationInB.toStringAsFixed(1)}B';
+      double populationInB = populacao / 1000000000;
+      return '${populationInB.toStringAsFixed(1)} Bi';
     }
   }
 
@@ -201,26 +205,26 @@ class _CountryListScreenState extends State<CountryListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Paises do mundo'),
+        title: Text('Paises do Mundo'),
       ),
-      body: FutureBuilder<List<Country>>(
-        future: _countryData,
+      body: FutureBuilder<List<Pais>>(
+        future: _paisDados,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            // Group countries by region and sub-region
-            Map<String, Map<String, List<Country>>> groupedCountries = {};
-            snapshot.data!.forEach((country) {
-              if (groupedCountries.containsKey(country.region)) {
-                Map<String, List<Country>> subRegions =
-                    groupedCountries[country.region]!;
-                if (subRegions.containsKey(country.subregion)) {
-                  subRegions[country.subregion]!.add(country);
+            // Agrupar países por região e sub-região
+            Map<String, Map<String, List<Pais>>> groupedCountries = {};
+            snapshot.data!.forEach((pais) {
+              if (groupedCountries.containsKey(pais.regiao)) {
+                Map<String, List<Pais>> subRegions =
+                    groupedCountries[pais.regiao]!;
+                if (subRegions.containsKey(pais.subRegiao)) {
+                  subRegions[pais.subRegiao]!.add(pais);
                 } else {
-                  subRegions[country.subregion] = [country];
+                  subRegions[pais.subRegiao] = [pais];
                 }
               } else {
-                groupedCountries[country.region] = {
-                  country.subregion: [country]
+                groupedCountries[pais.regiao] = {
+                  pais.subRegiao: [pais]
                 };
               }
             });
@@ -228,15 +232,14 @@ class _CountryListScreenState extends State<CountryListScreen> {
             return ListView.builder(
               itemCount: groupedCountries.length,
               itemBuilder: (context, index) {
-                String region = groupedCountries.keys.elementAt(index);
-                Map<String, List<Country>> subRegions =
-                    groupedCountries[region]!;
+                String regiao = groupedCountries.keys.elementAt(index);
+                Map<String, List<Pais>> subRegions = groupedCountries[regiao]!;
                 List<String> subRegionNames = subRegions.keys.toList();
                 subRegionNames.sort();
 
                 return ExpansionTile(
                   title: Text(
-                    region,
+                    regiao,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
@@ -252,17 +255,17 @@ class _CountryListScreenState extends State<CountryListScreen> {
                               ),
                             ),
                             children: subRegions[subRegionName]!
-                                .map((country) => ListTile(
+                                .map((pais) => ListTile(
                                       leading: Container(
                                         width: 48,
                                         height: 32,
                                         child: Image.network(
-                                          country.flagUrl,
+                                          pais.flagUrl,
                                           fit: BoxFit.cover,
                                         ),
                                       ),
                                       title: Text(
-                                        country.name,
+                                        pais.nome,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
@@ -272,10 +275,9 @@ class _CountryListScreenState extends State<CountryListScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('Capital: ${country.capital}'),
+                                          Text('Capital: ${pais.capital}'),
                                           SizedBox(height: 4),
-                                          Text(
-                                              'Population: ${country.population}'),
+                                          Text('População: ${pais.populacao}'),
                                           SizedBox(height: 4),
                                         ],
                                       ),
@@ -285,7 +287,7 @@ class _CountryListScreenState extends State<CountryListScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CountryDetailsScreen(
-                                              country: country,
+                                              pais: pais,
                                             ),
                                           ),
                                         );
@@ -298,7 +300,7 @@ class _CountryListScreenState extends State<CountryListScreen> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Erro: ${snapshot.error}'));
           } else {
             return Center(child: CircularProgressIndicator());
           }
@@ -309,28 +311,28 @@ class _CountryListScreenState extends State<CountryListScreen> {
 }
 
 class CountryDetailsScreen extends StatelessWidget {
-  final Country country;
+  final Pais pais;
 
-  const CountryDetailsScreen({required this.country});
+  const CountryDetailsScreen({required this.pais});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(country.name),
+        title: Text(pais.nome),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (country.flagUrl.isNotEmpty)
+            if (pais.flagUrl.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Image.network(
-                      country.flagUrl,
+                      pais.flagUrl,
                       fit: BoxFit.cover,
                     ),
                   ],
@@ -342,42 +344,42 @@ class CountryDetailsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Capital: ${country.capital}',
+                    'Capital: ${pais.capital}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Population: ${country.population}',
+                    'População: ${pais.populacao}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Region: ${country.region}',
+                    'Região: ${pais.regiao}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Subregion: ${country.subregion}',
+                    'Sub-região: ${pais.subRegiao}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-            if (country.languages.isNotEmpty)
+            if (pais.idioma.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Languages',
+                      'Idiomas',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: country.languages.map((language) {
+                      children: pais.idioma.map((language) {
                         return Text(
                           language,
                           style: TextStyle(fontSize: 16),
@@ -387,21 +389,21 @@ class CountryDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            if (country.currencies.isNotEmpty)
+            if (pais.moeda.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Currencies',
+                      'Moedas',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: country.currencies.map((currency) {
+                      children: pais.moeda.map((currency) {
                         return Text(
                           currency,
                           style: TextStyle(fontSize: 16),
@@ -411,21 +413,21 @@ class CountryDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            if (country.timezones.isNotEmpty)
+            if (pais.fusoHorario.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Timezones',
+                      'Fusos Horários',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: country.timezones.map((timezone) {
+                      children: pais.fusoHorario.map((timezone) {
                         return Text(
                           timezone,
                           style: TextStyle(fontSize: 16),
